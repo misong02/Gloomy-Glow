@@ -1,0 +1,1540 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gloomy Grow - Emotion Care Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0d0a16 0%, #1a0e2e 50%, #0d0a16 100%);
+            color: #e0d4f7;
+            min-height: 100vh;
+            overflow-x: hidden;
+            /* 🍴 핑크색 포크 (기본 커서) */
+            cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32"><text y="28" font-size="28" fill="%23ff69b4">🍴</text></svg>') 4 4, auto;
+        }
+
+
+
+        header {
+            background: rgba(26, 14, 46, 0.7);
+            backdrop-filter: blur(15px);
+            border-bottom: 2px solid rgba(186, 85, 211, 0.4);
+            padding: 25px 50px;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 20px rgba(186, 85, 211, 0.3);
+        }
+
+        .header-title h1 {
+            background: linear-gradient(90deg, #ba55d3, #ff69b4, #7fffd4);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-size: 2.8em;
+            font-weight: bold;
+            text-shadow: 0 0 30px rgba(186, 85, 211, 0.6);
+            letter-spacing: 2px;
+        }
+
+        .header-title p {
+            color: #b8a3d6;
+            font-size: 1em;
+            margin-top: 8px;
+        }
+
+        .lang-toggle {
+            background: rgba(186, 85, 211, 0.25);
+            border: 2px solid #ba55d3;
+            color: #ff69b4;
+            padding: 12px 25px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 1.1em;
+            transition: all 0.3s;
+        }
+
+        .lang-toggle:hover {
+            background: rgba(186, 85, 211, 0.5);
+            box-shadow: 0 0 25px rgba(186, 85, 211, 0.7);
+            transform: translateY(-2px);
+        }
+
+        .main-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 35px;
+            padding: 45px;
+            max-width: 1800px;
+            margin: 0 auto;
+        }
+
+        .panel {
+            background: rgba(26, 14, 46, 0.5);
+            border: 2px solid rgba(186, 85, 211, 0.35);
+            border-radius: 25px;
+            padding: 35px;
+            backdrop-filter: blur(12px);
+            box-shadow: 0 10px 40px rgba(186, 85, 211, 0.25);
+        }
+
+        .panel h2 {
+            color: #ff69b4;
+            margin-bottom: 25px;
+            font-size: 2em;
+            text-shadow: 0 0 15px rgba(255, 105, 180, 0.5);
+        }
+
+        /* 좌측 패널: 감정 일기 */
+        .emotion-checkboxes {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .emotion-checkbox {
+            display: flex;
+            align-items: center;
+            background: rgba(186, 85, 211, 0.15);
+            border: 2px solid rgba(186, 85, 211, 0.4);
+            padding: 12px 18px;
+            border-radius: 18px;
+            cursor: pointer;
+            transition: all 0.3s;
+            user-select: none;
+        }
+
+        .emotion-checkbox:hover {
+            background: rgba(186, 85, 211, 0.3);
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(186, 85, 211, 0.4);
+        }
+
+        .emotion-checkbox input[type="checkbox"] {
+            margin-right: 10px;
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+            accent-color: #ff69b4;
+        }
+
+        .emotion-checkbox.checked {
+            background: rgba(186, 85, 211, 0.4);
+            border-color: #ff69b4;
+            box-shadow: 0 0 20px rgba(255, 105, 180, 0.5);
+        }
+
+        textarea {
+            width: 100%;
+            min-height: 140px;
+            background: rgba(13, 10, 22, 0.7);
+            border: 2px solid rgba(127, 255, 212, 0.35);
+            border-radius: 18px;
+            padding: 18px;
+            color: #e0d4f7;
+            font-size: 1.05em;
+            resize: vertical;
+            margin-bottom: 18px;
+            line-height: 1.6;
+        }
+
+        textarea::placeholder {
+            color: #7b6b9a;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: #7fffd4;
+            box-shadow: 0 0 20px rgba(127, 255, 212, 0.4);
+        }
+
+        .record-btn {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, #7fffd4, #ba55d3);
+            border: none;
+            border-radius: 18px;
+            color: white;
+            font-size: 1.15em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-bottom: 25px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .record-btn:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 35px rgba(127, 255, 212, 0.6);
+        }
+
+        .diary-list {
+            max-height: 450px;
+            overflow-y: auto;
+            padding-right: 12px;
+        }
+
+        .diary-item {
+            background: rgba(13, 10, 22, 0.7);
+            border-left: 5px solid #7fffd4;
+            border-radius: 12px;
+            padding: 18px;
+            margin-bottom: 18px;
+            transition: all 0.3s;
+        }
+
+        .diary-item:hover {
+            transform: translateX(8px);
+            box-shadow: 0 6px 25px rgba(127, 255, 212, 0.35);
+        }
+
+        .diary-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+            font-size: 0.9em;
+            color: #b8a3d6;
+        }
+
+        .emotion-badges {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .emotion-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 0.85em;
+            font-weight: bold;
+        }
+
+        .badge-sadness { background: rgba(186, 85, 211, 0.4); color: #ba55d3; border: 1px solid #ba55d3; }
+        .badge-anger { background: rgba(255, 105, 180, 0.4); color: #ff69b4; border: 1px solid #ff69b4; }
+        .badge-anxiety { background: rgba(127, 255, 212, 0.4); color: #7fffd4; border: 1px solid #7fffd4; }
+
+        .diary-content {
+            color: #e0d4f7;
+            line-height: 1.5;
+        }
+
+        /* 우측 패널: 글루미 급여 테이블 */
+        .character-window {
+            background: rgba(13, 10, 22, 0.85);
+            border: 3px solid rgba(186, 85, 211, 0.5);
+            border-radius: 25px;
+            padding: 45px;
+            margin-bottom: 25px;
+            min-height: 450px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hunger-alert {
+            position: fixed;              /* absolute → fixed로 변경 */
+            top: 100px;                   /* 20px → 100px로 변경 (헤더 아래) */
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(255, 105, 180, 0.95);
+            color: white;
+            padding: 20px 40px;           /* 15px 30px → 20px 40px */
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 1.3em;             /* 1.1em → 1.3em */
+            opacity: 0;
+            transition: opacity 0.3s;
+            z-index: 9999;                /* 10 → 9999 (최상위) */
+            text-align: center;
+            box-shadow: 0 0 30px rgba(255, 105, 180, 0.8);
+            animation: neonPulse 2s ease-in-out infinite;
+            max-width: 90%;
+            pointer-events: none;         /* 추가: 클릭 방지 */
+        }
+
+
+        .hunger-alert.show {
+            opacity: 1;
+        }
+
+        @keyframes neonPulse {
+            0%, 100% { box-shadow: 0 0 30px rgba(255, 105, 180, 0.8); }
+            50% { box-shadow: 0 0 50px rgba(255, 105, 180, 1); }
+        }
+
+        .character-img {
+            max-width: 320px;
+            max-height: 320px;
+            animation: breathe 3.5s ease-in-out infinite;
+            transition: all 0.3s;
+        }
+
+        @keyframes breathe {
+            0%, 100% { transform: translateY(0) scale(1); }
+            50% { transform: translateY(-12px) scale(1.02); }
+        }
+
+        @keyframes jellyStretch {
+            0%, 100% { transform: scaleY(1) scaleX(1); }
+            20% { transform: scaleY(1.25) scaleX(0.9); }
+            40% { transform: scaleY(0.85) scaleX(1.1); }
+            60% { transform: scaleY(1.15) scaleX(0.95); }
+            80% { transform: scaleY(0.95) scaleX(1.05); }
+        }
+
+        @keyframes shakeVibrate {
+            0%, 100% { transform: translateX(0) rotate(0deg); }
+            10%, 30%, 50%, 70%, 90% { transform: translateX(-6px) rotate(-2deg); }
+            20%, 40%, 60%, 80% { transform: translateX(6px) rotate(2deg); }
+        }
+
+        @keyframes jumpBounce {
+            0%, 100% { transform: translateY(0) scale(1); }
+            20% { transform: translateY(-40px) scale(1.05); }
+            40% { transform: translateY(-20px) scale(0.98); }
+            60% { transform: translateY(-35px) scale(1.03); }
+            80% { transform: translateY(-10px) scale(0.99); }
+        }
+
+        .jelly { animation: jellyStretch 1s ease-in-out 3; }
+        .shake { animation: shakeVibrate 0.6s ease-in-out 5; }
+        .jump { animation: jumpBounce 0.7s ease-in-out 4; }
+
+        .speech-bubble {
+            position: absolute;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(255, 105, 180, 0.95);
+            color: white;
+            padding: 18px 30px;
+            border-radius: 25px;
+            font-weight: bold;
+            font-size: 1.05em;
+            opacity: 0;
+            transition: opacity 0.3s;
+            z-index: 10;
+            box-shadow: 0 5px 20px rgba(255, 105, 180, 0.6);
+            max-width: 80%;
+            text-align: center;
+        }
+
+        .speech-bubble.show {
+            opacity: 1;
+        }
+
+        /* 감정 표출 입력 영역 */
+        .feeding-section {
+            margin-bottom: 25px;
+        }
+
+        .feeding-section h3 {
+            color: #7fffd4;
+            margin-bottom: 15px;
+            font-size: 1.3em;
+        }
+
+        .feeding-buttons {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .feed-character-btn {
+            padding: 14px;
+            background: rgba(186, 85, 211, 0.2);
+            border: 2px solid;
+            border-radius: 15px;
+            color: white;
+            font-size: 1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+        }
+
+        .feed-character-btn:nth-child(1) {
+            border-color: #ba55d3;
+        }
+
+        .feed-character-btn:nth-child(2) {
+            border-color: #ff69b4;
+        }
+
+        .feed-character-btn:nth-child(3) {
+            border-color: #7fffd4;
+        }
+
+        .feed-character-btn.hungry {
+            animation: buttonPulse 1.5s ease-in-out infinite;
+        }
+
+        @keyframes buttonPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        .feed-character-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(186, 85, 211, 0.5);
+        }
+
+        .feed-character-btn:nth-child(1):hover {
+            background: rgba(186, 85, 211, 0.4);
+            box-shadow: 0 8px 25px rgba(186, 85, 211, 0.6);
+        }
+
+        .feed-character-btn:nth-child(2):hover {
+            background: rgba(255, 105, 180, 0.4);
+            box-shadow: 0 8px 25px rgba(255, 105, 180, 0.6);
+        }
+
+        .feed-character-btn:nth-child(3):hover {
+            background: rgba(127, 255, 212, 0.4);
+            box-shadow: 0 8px 25px rgba(127, 255, 212, 0.6);
+        }
+
+        .emotion-input-area {
+            display: none;
+            margin-top: 15px;
+        }
+
+        .emotion-input-area.active {
+            display: block;
+        }
+
+        .emotion-input-area textarea {
+            min-height: 100px;
+            margin-bottom: 10px;
+        }
+
+        .feed-submit-btn {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #ff69b4, #ba55d3);
+            border: none;
+            border-radius: 15px;
+            color: white;
+            font-size: 1.05em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .feed-submit-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(255, 105, 180, 0.6);
+        }
+
+        /* 요리 시스템 */
+        .cook-btn {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, #ba55d3, #ff69b4);
+            border: none;
+            border-radius: 18px;
+            color: white;
+            font-size: 1.15em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 15px;
+        }
+
+        .cook-btn.locked {
+            background: rgba(100, 100, 100, 0.5);
+            cursor: not-allowed;
+        }
+
+        .cook-btn.unlocked {
+            animation: pulseGlow 2s ease-in-out infinite;
+        }
+
+        @keyframes pulseGlow {
+            0%, 100% { box-shadow: 0 0 20px rgba(255, 105, 180, 0.5); }
+            50% { box-shadow: 0 0 40px rgba(255, 105, 180, 0.8); }
+        }
+
+        .cook-btn:hover:not(.locked) {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 35px rgba(255, 105, 180, 0.7);
+        }
+
+        @keyframes cookingDance {
+            0%, 100% { transform: rotate(0deg) scale(1); }
+            25% { transform: rotate(-10deg) scale(1.1); }
+            50% { transform: rotate(10deg) scale(0.9); }
+            75% { transform: rotate(-5deg) scale(1.05); }
+        }
+
+        .cooking { animation: cookingDance 2s ease-in-out infinite; }
+
+        /* 모달 */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal.show {
+            display: flex;
+        }
+
+        .receipt {
+            background: #f5f5dc;
+            color: #333;
+            padding: 40px;
+            border-radius: 10px;
+            max-width: 550px;
+            font-family: 'Courier New', monospace;
+            border: 3px dashed #666;
+            position: relative;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .receipt h3 {
+            text-align: center;
+            border-bottom: 2px dashed #666;
+            padding-bottom: 15px;
+            margin-bottom: 20px;
+            font-size: 1.5em;
+        }
+
+        .receipt-item {
+            margin: 10px 0;
+            padding: 8px 0;
+            border-bottom: 1px dotted #999;
+            line-height: 1.6;
+        }
+
+        .receipt-summary {
+            margin-top: 20px;
+            padding-top: 15px;
+            border-top: 2px dashed #666;
+            font-weight: bold;
+            line-height: 1.8;
+        }
+
+        .cleanse-btn {
+            width: 100%;
+            padding: 15px;
+            background: #333;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            margin-top: 20px;
+            cursor: pointer;
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+            font-size: 1.1em;
+        }
+
+        .cleanse-btn:hover {
+            background: #555;
+        }
+
+        /* 하단 패널: 글루미 도감 */
+        .wiki-section {
+            grid-column: 1 / -1;
+            margin-top: 25px;
+        }
+
+        .wiki-title {
+            color: #ff69b4;
+            font-size: 2.5em;
+            text-align: center;
+            margin-bottom: 30px;
+            text-shadow: 0 0 20px rgba(255, 105, 180, 0.6);
+        }
+
+        .wiki-cards {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 35px;
+        }
+
+        .wiki-card {
+            background: #0d0a16;
+            border: 4px solid;
+            border-radius: 25px;
+            padding: 35px;
+            transition: all 0.4s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .wiki-card::before {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            background: linear-gradient(45deg, transparent, rgba(255,255,255,0.1), transparent);
+            z-index: 0;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .wiki-card:hover::before {
+            opacity: 1;
+        }
+
+        .wiki-card > * {
+            position: relative;
+            z-index: 1;
+        }
+
+        .wiki-card:nth-child(1) { border-color: #ba55d3; }
+        .wiki-card:nth-child(2) { border-color: #ff69b4; }
+        .wiki-card:nth-child(3) { border-color: #7fffd4; }
+
+        .wiki-card:hover {
+            transform: translateY(-12px);
+            box-shadow: 0 20px 50px rgba(186, 85, 211, 0.6);
+        }
+
+        .wiki-avatar {
+            width: 180px;
+            height: 180px;
+            margin: 0 auto 25px;
+            display: block;
+            border-radius: 50%;
+            border: 4px solid;
+            object-fit: cover;
+        }
+
+        .wiki-card:nth-child(1) .wiki-avatar { border-color: #ba55d3; }
+        .wiki-card:nth-child(2) .wiki-avatar { border-color: #ff69b4; }
+        .wiki-card:nth-child(3) .wiki-avatar { border-color: #7fffd4; }
+
+        .wiki-card h3 {
+            color: white;
+            font-size: 2em;
+            margin-bottom: 12px;
+            text-align: center;
+            text-shadow: 0 0 15px rgba(255, 255, 255, 0.5);
+        }
+
+        .wiki-card .slogan {
+            color: #d0d0d0;
+            text-align: center;
+            font-style: italic;
+            margin-bottom: 25px;
+            font-size: 1.05em;
+            line-height: 1.4;
+        }
+
+        .wiki-section-box {
+            background: rgba(255, 255, 255, 0.08);
+            border-left: 5px solid;
+            padding: 18px;
+            margin: 18px 0;
+            border-radius: 8px;
+            backdrop-filter: blur(5px);
+        }
+
+        .wiki-card:nth-child(1) .wiki-section-box { border-color: #ba55d3; }
+        .wiki-card:nth-child(2) .wiki-section-box { border-color: #ff69b4; }
+        .wiki-card:nth-child(3) .wiki-section-box { border-color: #7fffd4; }
+
+        .wiki-section-box h4 {
+            color: white;
+            margin-bottom: 10px;
+            font-size: 1.25em;
+        }
+
+        .wiki-section-box p {
+            color: #e0e0e0;
+            line-height: 1.7;
+            font-size: 1.02em;
+        }
+
+        ::-webkit-scrollbar {
+            width: 10px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: rgba(13, 10, 22, 0.6);
+            border-radius: 5px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: rgba(186, 85, 211, 0.6);
+            border-radius: 5px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(186, 85, 211, 0.9);
+        }
+             /* 🥄 클릭 가능한 요소에 보라색 숟가락 커서 추가 */
+        button,
+        a,
+        input[type="checkbox"],
+        label,
+        .emotion-checkbox,
+        .feed-character-btn,
+        .record-btn,
+        .feed-submit-btn,
+        .cook-btn,
+        .cleanse-btn,
+        .lang-toggle,
+        textarea {
+            cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32"><text y="28" font-size="28" fill="%23ba55d3">🥄</text></svg>') 4 4, pointer !important;
+        }
+
+        @media (max-width: 1400px) {
+            .main-container {
+                grid-template-columns: 1fr;
+            }
+            .wiki-cards {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="header-title">
+            <h1 data-lang="title">Gloomy Grow</h1>
+            <p data-lang="subtitle">당신의 감정을 먹고 자라는 몬스터들</p>
+        </div>
+        <button class="lang-toggle" onclick="toggleLanguage()">KO / EN</button>
+    </header>
+
+    <div class="main-container">
+        <!-- 좌측 패널: 감정 일기 -->
+        <div class="panel">
+            <h2 data-lang="diary-title">📔 감정 일기</h2>
+            
+            <div class="emotion-checkboxes">
+                <label class="emotion-checkbox" id="checkbox-sadness">
+                    <input type="checkbox" value="sadness" onchange="updateCheckboxStyle(this)">
+                    <span data-lang="emotion-sadness">💧 슬픔/우울</span>
+                </label>
+                <label class="emotion-checkbox" id="checkbox-anger">
+                    <input type="checkbox" value="anger" onchange="updateCheckboxStyle(this)">
+                    <span data-lang="emotion-anger">🔥 분노/짜증</span>
+                </label>
+                <label class="emotion-checkbox" id="checkbox-anxiety">
+                    <input type="checkbox" value="anxiety" onchange="updateCheckboxStyle(this)">
+                    <span data-lang="emotion-anxiety">🌀 불안/강박</span>
+                </label>
+            </div>
+
+            <textarea id="diaryInput" data-lang-placeholder="diary-placeholder" placeholder="오늘 느낀 감정을 솔직하게 기록해보세요..."></textarea>
+            
+            <button class="record-btn" onclick="recordDiary()" data-lang="record-btn">📝 일기 기록하기</button>
+            
+            <div class="diary-list" id="diaryList"></div>
+        </div>
+
+        <!-- 우측 패널: 글루미 급여 -->
+        <div class="panel">
+            <h2 data-lang="feeding-title">🍴 글루미 급여하기</h2>
+            
+            <div class="character-window">
+                <div class="hunger-alert" id="hungerAlert"></div>
+                <div class="speech-bubble" id="speechBubble"></div>
+                <img src="./밀키,피즈,밍글.png" alt="Gloomy Characters" class="character-img" id="characterImg">
+            </div>
+
+            <div class="feeding-section">
+                <h3 data-lang="select-gloomy">배고픈 글루미를 선택하세요</h3>
+                <div class="feeding-buttons">
+                    <button class="feed-character-btn" id="btn-milky" onclick="selectCharacter('milky')" data-lang="feed-milky">밀키 🍴</button>
+                    <button class="feed-character-btn" id="btn-fizz" onclick="selectCharacter('fizz')" data-lang="feed-fizz">피즈 🍴</button>
+                    <button class="feed-character-btn" id="btn-mingle" onclick="selectCharacter('mingle')" data-lang="feed-mingle">밍글 🍴</button>
+                </div>
+
+                <div class="emotion-input-area" id="emotionInputArea">
+                    <h3 data-lang="express-emotion" id="expressTitle">감정을 표현해주세요</h3>
+                    <textarea id="emotionExpression" data-lang-placeholder="emotion-placeholder" placeholder="예: 너무 외로워서 슬퍼 ㅜㅜ 난 왜 이렇게 잘하는 게 없을까..."></textarea>
+                    <button class="feed-submit-btn" onclick="feedEmotion()" data-lang="feed-submit">먹이 주기</button>
+                </div>
+            </div>
+
+            <button class="cook-btn locked" id="cookBtn" onclick="startCooking()" data-lang="cook-btn">요리하기 (Go Cooking!)</button>
+        </div>
+
+        <!-- 하단 패널: 글루미 도감 -->
+        <div class="wiki-section">
+            <h2 class="wiki-title" data-lang="wiki-title">📚 Gloomy Crew Wiki</h2>
+            <div class="wiki-cards">
+                <!-- Milky Card -->
+                <div class="wiki-card">
+                    <img src="./밀키.png" alt="Milky" class="wiki-avatar">
+                    <h3>Milky (밀키)</h3>
+                    <p class="slogan" data-lang="milky-slogan">"눈물을 먹고 자라는 천사 같은 존재"</p>
+                    
+                    <div class="wiki-section-box">
+                        <h4 data-lang="wiki-appearance">🌸 외형</h4>
+                        <p data-lang="milky-appearance">외눈, 천사 날개, 아홀로틀 아가미. 라벤더-블루 밀키 색조. 부드럽고 촉촉한 질감.</p>
+                    </div>
+                    
+                    <div class="wiki-section-box">
+                        <h4 data-lang="wiki-hungry">😢 배고플 때</h4>
+                        <p data-lang="milky-hungry">눈물을 뚝뚝 흘리며 울기 시작합니다. 돌봐달라는 신호.</p>
+                    </div>
+                    
+                    <div class="wiki-section-box">
+                        <h4 data-lang="wiki-food">🍫 먹이</h4>
+                        <p data-lang="milky-food">질척한 치즈와 다크초콜릿 맛의 슬픔. 우울한 감정을 일기에 쓰면 Milky에게 전달됩니다.</p>
+                    </div>
+                </div>
+
+                <!-- Fizz Card -->
+                <div class="wiki-card">
+                    <img src="./피즈.png" alt="Fizz" class="wiki-avatar">
+                    <h3>Fizz (피즈)</h3>
+                    <p class="slogan" data-lang="fizz-slogan">"핫핑크로 폭발하는 검은 털 뭉치"</p>
+                    
+                    <div class="wiki-section-box">
+                        <h4 data-lang="wiki-appearance">🖤 외형</h4>
+                        <p data-lang="fizz-appearance">검은 털 공, 고양이 귀 스파이크, 날카로운 송곳니. 평소엔 작고 조용하지만 언제든 폭발 직전.</p>
+                    </div>
+                    
+                    <div class="wiki-section-box">
+                        <h4 data-lang="wiki-hungry">💥 배고플 때</h4>
+                        <p data-lang="fizz-hungry">온몸이 핫핑크로 물들고 스파이크가 곤두섭니다. 짜릿하고 위험한 아름다움.</p>
+                    </div>
+                    
+                    <div class="wiki-section-box">
+                        <h4 data-lang="wiki-food">🥤 먹이</h4>
+                        <p data-lang="fizz-food">탄산음료와 매운 스낵 맛의 분노. 타이핑 속도, 화면 터치 압력으로 분노량 측정.</p>
+                    </div>
+                </div>
+
+                <!-- Mingle Card -->
+                <div class="wiki-card">
+                    <img src="./밍글.png" alt="Mingle" class="wiki-avatar">
+                    <h3>Mingle (밍글)</h3>
+                    <p class="slogan" data-lang="mingle-slogan">"지퍼 입을 가진 민트빛 불안 덩어리"</p>
+                    
+                    <div class="wiki-section-box">
+                        <h4 data-lang="wiki-appearance">💚 외형</h4>
+                        <p data-lang="mingle-appearance">덥수룩한 민트-블루 먼지 공, 소용돌이 눈, 은색 금속 지퍼 입. 끊임없이 조금씩 떨립니다.</p>
+                    </div>
+                    
+                    <div class="wiki-section-box">
+                        <h4 data-lang="wiki-hungry">😬 배고플 때</h4>
+                        <p data-lang="mingle-hungry">지퍼가 저절로 열리며 덜덜 떨립니다. 불안이 쌓일수록 몸이 커지고 눈이 더 빠르게 돕니다.</p>
+                    </div>
+                    
+                    <div class="wiki-section-box">
+                        <h4 data-lang="wiki-food">🍬 먹이</h4>
+                        <p data-lang="mingle-food">팝핑 스타 캔디 맛의 불안. 호흡 패턴 입력이나 걱정 목록 작성으로 먹이 제공.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 요리 영수증 모달 -->
+    <div class="modal" id="receiptModal">
+        <div class="receipt">
+            <h3 data-lang="receipt-title">🍽️ 감정 요리 영수증 🍽️</h3>
+            <div id="receiptContent"></div>
+            <button class="cleanse-btn" onclick="cleanse()" data-lang="cleanse-btn">깨끗하게 정화하기 (Cleanse)</button>
+        </div>
+    </div>
+
+    <script>
+        let currentLang = 'ko';
+        let emotionStacks = { sadness: 0, anger: 0, anxiety: 0 };
+        let diaryEntries = [];
+        let totalCookCount = 0;
+        let selectedCharacter = null;
+
+        const translations = {
+            ko: {
+                title: 'Gloomy Grow',
+                subtitle: '당신의 감정을 먹고 자라는 몬스터들',
+                'diary-title': '📔 감정 일기',
+                'emotion-sadness': '💧 슬픔/우울',
+                'emotion-anger': '🔥 분노/짜증',
+                'emotion-anxiety': '🌀 불안/강박',
+                'diary-placeholder': '오늘 느낀 감정을 솔직하게 기록해보세요...',
+                'record-btn': '📝 일기 기록하기',
+                'feeding-title': '🍴 글루미 급여하기',
+                'select-gloomy': '배고픈 글루미를 선택하세요',
+                'feed-milky': '밀키 🍴',
+                'feed-fizz': '피즈 🍴',
+                'feed-mingle': '밍글 🍴',
+                'express-emotion': '감정을 표현해주세요',
+                'emotion-placeholder': '예: 너무 외로워서 슬퍼 ㅜㅜ 난 왜 이렇게 잘하는 게 없을까...',
+                'feed-submit': '먹이 주기',
+                'cook-btn': '요리하기 (Go Cooking!)',
+                'wiki-title': '📚 Gloomy Crew Wiki',
+                'milky-slogan': '"눈물을 먹고 자라는 천사 같은 존재"',
+                'fizz-slogan': '"핫핑크로 폭발하는 검은 털 뭉치"',
+                'mingle-slogan': '"지퍼 입을 가진 민트빛 불안 덩어리"',
+                'wiki-appearance': '🌸 외형',
+                'wiki-hungry': '😢 배고플 때',
+                'wiki-food': '🍫 먹이',
+                'milky-appearance': '외눈, 천사 날개, 아홀로틀 아가미. 라벤더-블루 밀키 색조. 부드럽고 촉촉한 질감.',
+                'milky-hungry': '눈물을 뚝뚝 흘리며 울기 시작합니다. 돌봐달라는 신호.',
+                'milky-food': '질척한 치즈와 다크초콜릿 맛의 슬픔. 우울한 감정을 일기에 쓰면 Milky에게 전달됩니다.',
+                'fizz-appearance': '검은 털 공, 고양이 귀 스파이크, 날카로운 송곳니. 평소엔 작고 조용하지만 언제든 폭발 직전.',
+                'fizz-hungry': '온몸이 핫핑크로 물들고 스파이크가 곤두섭니다. 짜릿하고 위험한 아름다움.',
+                'fizz-food': '탄산음료와 매운 스낵 맛의 분노. 타이핑 속도, 화면 터치 압력으로 분노량 측정.',
+                'mingle-appearance': '덥수룩한 민트-블루 먼지 공, 소용돌이 눈, 은색 금속 지퍼 입. 끊임없이 조금씩 떨립니다.',
+                'mingle-hungry': '지퍼가 저절로 열리며 덜덜 떨립니다. 불안이 쌓일수록 몸이 커지고 눈이 더 빠르게 돕니다.',
+                'mingle-food': '팝핑 스타 캔디 맛의 불안. 호흡 패턴 입력이나 걱정 목록 작성으로 먹이 제공.',
+                'receipt-title': '🍽️ 감정 요리 영수증 🍽️',
+                'cleanse-btn': '깨끗하게 정화하기 (Cleanse)',
+                feedbacks: {
+                    milky: '촉촉하게 받아먹었어요... 💧 고마워요!',
+                    fizz: '매콤하게 씹어먹었어요! 🔥 시원해!',
+                    mingle: '톡톡 터지는 맛이에요! 🌀 고마워요!'
+                },
+                hungerAlerts: {
+                    sadness: '⚠️ 밀키가 슬픔 3개를 먹어 배고파합니다!',
+                    anger: '⚠️ 피즈가 분노 3개를 먹어 배고파합니다!',
+                    anxiety: '⚠️ 밍글이 불안 3개를 먹어 배고파합니다!'
+                },
+                noEmotionAlert: '최소 하나의 감정을 선택해주세요!',
+                noContentAlert: '일기 내용을 입력해주세요!',
+                shortContentAlert: '너무 짧아요! 최소 10자 이상 적어주세요.',
+                recordSuccess: '일기가 기록되었습니다!',
+                selectCharacterFirst: '먼저 글루미를 선택해주세요!',
+                notHungryAlert: '이 글루미는 아직 배고프지 않아요! (해당 감정 스택 3개 필요)',
+                noExpressionAlert: '감정 표현을 입력해주세요!',
+                shortExpressionAlert: '너무 짧아요! 최소 10자 이상 솔직하게 표현해주세요.',
+                fedSuccess: '먹이를 주었습니다! 감정 스택 3개가 정화되었습니다.',
+                cookNeedMore: '요리하려면 총 3번 이상 일기를 작성해야 해요!',
+                expressEmotionFor: {
+                    milky: '밀키에게 슬픔을 표현해주세요',
+                    fizz: '피즈에게 분노를 표현해주세요',
+                    mingle: '밍글에게 불안을 표현해주세요'
+                }
+            },
+            en: {
+                title: 'Gloomy Grow',
+                subtitle: 'Monsters that grow by eating your emotions',
+                'diary-title': '📔 Emotion Diary',
+                'emotion-sadness': '💧 Sadness/Depression',
+                'emotion-anger': '🔥 Anger/Irritation',
+                'emotion-anxiety': '🌀 Anxiety/Obsession',
+                'diary-placeholder': 'Record your feelings honestly...',
+                'record-btn': '📝 Record Diary',
+                'feeding-title': '🍴 Feed Gloomy',
+                'select-gloomy': 'Select a hungry Gloomy',
+                'feed-milky': 'Milky 🍴',
+                'feed-fizz': 'Fizz 🍴',
+                'feed-mingle': 'Mingle 🍴',
+                'express-emotion': 'Express your emotion',
+                'emotion-placeholder': 'e.g., I\'m so lonely and sad... Why am I not good at anything...',
+                'feed-submit': 'Feed',
+                'cook-btn': 'Go Cooking!',
+                'wiki-title': '📚 Gloomy Crew Wiki',
+                'milky-slogan': '"An angelic being that grows by eating tears"',
+                'fizz-slogan': '"A black furball exploding in hot pink"',
+                'mingle-slogan': '"A mint-colored anxiety lump with a zipper mouth"',
+                'wiki-appearance': '🌸 Appearance',
+                'wiki-hungry': '😢 When Hungry',
+                'wiki-food': '🍫 Food',
+                'milky-appearance': 'One eye, angel wings, axolotl gills. Lavender-blue milky tone. Soft and moist texture.',
+                'milky-hungry': 'Starts crying with tears dripping. A signal asking for care.',
+                'milky-food': 'Sadness with the taste of sticky cheese and dark chocolate. Writing depressed emotions feeds Milky.',
+                'fizz-appearance': 'Black furball, cat ear spikes, sharp fangs. Usually small and quiet but always on the verge of explosion.',
+                'fizz-hungry': 'Entire body turns hot pink and spikes stand up. Thrilling and dangerous beauty.',
+                'fizz-food': 'Anger with the taste of soda and spicy snacks. Measured by typing speed and screen touch pressure.',
+                'mingle-appearance': 'Fluffy mint-blue dust ball, swirling eyes, silver metal zipper mouth. Constantly trembles slightly.',
+                'mingle-hungry': 'Zipper opens by itself and trembles. The more anxiety builds, the bigger the body grows and eyes spin faster.',
+                'mingle-food': 'Anxiety with the taste of popping star candy. Fed by breathing pattern input or worry list writing.',
+                'receipt-title': '🍽️ Emotion Cooking Receipt 🍽️',
+                'cleanse-btn': 'Cleanse',
+                feedbacks: {
+                    milky: 'Ate it moistly... 💧 Thank you!',
+                    fizz: 'Ate it spicily! 🔥 Refreshing!',
+                    mingle: 'Tastes popping! 🌀 Thank you!'
+                },
+                hungerAlerts: {
+                    sadness: '⚠️ Milky is hungry after eating 3 sadness!',
+                    anger: '⚠️ Fizz is hungry after eating 3 anger!',
+                    anxiety: '⚠️ Mingle is hungry after eating 3 anxiety!'
+                },
+                noEmotionAlert: 'Please select at least one emotion!',
+                noContentAlert: 'Please write diary content!',
+                shortContentAlert: 'Too short! Please write at least 10 characters.',
+                recordSuccess: 'Diary recorded!',
+                selectCharacterFirst: 'Please select a Gloomy first!',
+                notHungryAlert: 'This Gloomy is not hungry yet! (Need 3 emotion stacks)',
+                noExpressionAlert: 'Please express your emotion!',
+                shortExpressionAlert: 'Too short! Please express honestly with at least 10 characters.',
+                fedSuccess: 'Fed successfully! 3 emotion stacks cleansed.',
+                cookNeedMore: 'You need to write diary at least 3 times to cook!',
+                expressEmotionFor: {
+                    milky: 'Express sadness to Milky',
+                    fizz: 'Express anger to Fizz',
+                    mingle: 'Express anxiety to Mingle'
+                }
+            }
+        };
+
+        const characterMapping = {
+            milky: 'sadness',
+            fizz: 'anger',
+            mingle: 'anxiety'
+        };
+
+        const foodPools = {
+            sadness: {
+                main: ['꾸덕한 퐁듀 치즈 불고기', '멜팅 다크 초콜릿 스테이크', 'Sticky Fondue Cheese Bulgogi', 'Melting Dark Chocolate Steak'],
+                side: ['꾸덕한 크림 감자 샐러드', '달콤 브라우니 크루통', 'Sticky Cream Potato Salad', 'Sweet Brownie Croutons'],
+                drink: ['딥 브라운 카카오 시럽 에이드', 'Deep Brown Cocoa Syrup Ade']
+            },
+            anger: {
+                main: ['불타는 캡사이신 칠리 치킨', '핫 사천 파스타', 'Burning Capsaicin Chili Chicken', 'Hot Sichuan Pasta'],
+                side: ['바삭한 불닭 나초 칩', '크레이지 할라피뇨 파퍼', 'Crispy Fire Chicken Nacho Chips', 'Crazy Jalapeño Popper'],
+                drink: ['강탄산 블루 레몬에이드', 'Strong Carbonated Blue Lemonade']
+            },
+            anxiety: {
+                main: ['팝핑 캔디 크러스트 피자', '타피오카 펄 콕콕 소시지', 'Popping Candy Crust Pizza', 'Tapioca Pearl Poke Sausage'],
+                side: ['별모양 레인보우 젤리 플래터', '크랙클 팝콘 볼', 'Star-shaped Rainbow Jelly Platter', 'Crackle Popcorn Bowl'],
+                drink: ['팝핑 스타 슈팅 소다', 'Popping Star Shooting Soda']
+            }
+        };
+
+        function loadData() {
+            const saved = localStorage.getItem('gloomyGrowData');
+            if (saved) {
+                const data = JSON.parse(saved);
+                emotionStacks = data.emotionStacks || { sadness: 0, anger: 0, anxiety: 0 };
+                diaryEntries = data.diaryEntries || [];
+                totalCookCount = data.totalCookCount || 0;
+                renderDiaryList();
+                checkHungerStatus();
+                updateCookButton();
+            }
+        }
+
+        function saveData() {
+            localStorage.setItem('gloomyGrowData', JSON.stringify({
+                emotionStacks,
+                diaryEntries,
+                totalCookCount
+            }));
+        }
+
+        function toggleLanguage() {
+            currentLang = currentLang === 'ko' ? 'en' : 'ko';
+            updateLanguage();
+        }
+
+        function updateLanguage() {
+            document.querySelectorAll('[data-lang]').forEach(el => {
+                const key = el.getAttribute('data-lang');
+                if (translations[currentLang][key]) {
+                    el.textContent = translations[currentLang][key];
+                }
+            });
+            document.querySelectorAll('[data-lang-placeholder]').forEach(el => {
+                const key = el.getAttribute('data-lang-placeholder');
+                if (translations[currentLang][key]) {
+                    el.placeholder = translations[currentLang][key];
+                }
+            });
+            renderDiaryList();
+            checkHungerStatus();
+            if (selectedCharacter) {
+                document.getElementById('expressTitle').textContent = translations[currentLang].expressEmotionFor[selectedCharacter];
+            }
+        }
+
+        function updateCheckboxStyle(checkbox) {
+            const label = checkbox.parentElement;
+            if (checkbox.checked) {
+                label.classList.add('checked');
+            } else {
+                label.classList.remove('checked');
+            }
+        }
+
+        function recordDiary() {
+            const checkboxes = document.querySelectorAll('.emotion-checkbox input[type="checkbox"]:checked');
+            const content = document.getElementById('diaryInput').value.trim();
+
+            if (checkboxes.length === 0) {
+                alert(translations[currentLang].noEmotionAlert);
+                return;
+            }
+
+            if (!content) {
+                alert(translations[currentLang].noContentAlert);
+                return;
+            }
+
+            if (content.length < 10) {
+                alert(translations[currentLang].shortContentAlert);
+                return;
+            }
+
+            const selectedEmotions = Array.from(checkboxes).map(cb => cb.value);
+            
+            // 감정 스택 증가
+            selectedEmotions.forEach(emotion => {
+                emotionStacks[emotion]++;
+            });
+
+            totalCookCount++;
+
+            // 일기 항목 생성
+            const entry = {
+                id: Date.now(),
+                date: new Date().toLocaleDateString(),
+                time: new Date().toLocaleTimeString(),
+                emotions: selectedEmotions,
+                content: content
+            };
+
+            diaryEntries.unshift(entry);
+
+            // 초기화
+            document.getElementById('diaryInput').value = '';
+            checkboxes.forEach(cb => {
+                cb.checked = false;
+                cb.parentElement.classList.remove('checked');
+            });
+
+            renderDiaryList();
+            checkHungerStatus();
+            updateCookButton();
+            saveData();
+
+            alert(translations[currentLang].recordSuccess);
+        }
+
+        function renderDiaryList() {
+            const list = document.getElementById('diaryList');
+            list.innerHTML = '';
+
+            diaryEntries.forEach(entry => {
+                const item = document.createElement('div');
+                item.className = 'diary-item';
+                item.dataset.id = entry.id;
+
+                const badgesHTML = entry.emotions.map(emotion => {
+                    const emoji = emotion === 'sadness' ? '💧' : emotion === 'anger' ? '🔥' : '🌀';
+                    return `<span class="emotion-badge badge-${emotion}">${emoji}</span>`;
+                }).join('');
+
+                item.innerHTML = `
+                    <div class="diary-meta">
+                        <span>${entry.date} ${entry.time}</span>
+                        <div class="emotion-badges">${badgesHTML}</div>
+                    </div>
+                    <div class="diary-content">${entry.content}</div>
+                `;
+
+                list.appendChild(item);
+            });
+        }
+
+        function checkHungerStatus() {
+            const alert = document.getElementById('hungerAlert');
+            let hungryEmotions = [];
+
+            Object.keys(emotionStacks).forEach(emotion => {
+                if (emotionStacks[emotion] >= 3) {
+                    hungryEmotions.push(emotion);
+                }
+            });
+
+            // 버튼 상태 업데이트
+            document.getElementById('btn-milky').classList.toggle('hungry', emotionStacks.sadness >= 3);
+            document.getElementById('btn-fizz').classList.toggle('hungry', emotionStacks.anger >= 3);
+            document.getElementById('btn-mingle').classList.toggle('hungry', emotionStacks.anxiety >= 3);
+
+            if (hungryEmotions.length > 0) {
+                const messages = hungryEmotions.map(e => translations[currentLang].hungerAlerts[e]);
+                alert.innerHTML = messages.join('<br>');
+                alert.classList.add('show');
+            } else {
+                alert.classList.remove('show');
+            }
+        }
+
+        function updateCookButton() {
+            const btn = document.getElementById('cookBtn');
+            if (totalCookCount >= 3) {
+                btn.classList.remove('locked');
+                btn.classList.add('unlocked');
+            } else {
+                btn.classList.add('locked');
+                btn.classList.remove('unlocked');
+            }
+        }
+
+        function selectCharacter(character) {
+            const emotion = characterMapping[character];
+            
+            if (emotionStacks[emotion] < 3) {
+                alert(translations[currentLang].notHungryAlert);
+                return;
+            }
+
+            selectedCharacter = character;
+            
+            document.getElementById('emotionInputArea').classList.add('active');
+            document.getElementById('emotionExpression').value = '';
+            document.getElementById('expressTitle').textContent = translations[currentLang].expressEmotionFor[character];
+            
+            // 🎲 랜덤 예시 (여러 개 중 하나)
+            const placeholders = {
+                ko: {
+                    milky: [
+                        '예: 너무 외로워서 슬퍼 ㅜㅜ 아무도 날 이해 못 해...',
+                        '예: 눈물이 계속 나... 왜 이렇게 힘들까...',
+                        '예: 우울해... 아무것도 하기 싫어... 😢'
+                    ],
+                    fizz: [
+                        '예: 진짜 화나! 왜 나한테만 이래? 짜증나 죽겠어!',
+                        '예: 열받아! 참을 수가 없어! 🔥',
+                        '예: 미치겠네! 왜 이렇게 짜증나는 거야!'
+                    ],
+                    mingle: [
+                        '예: 불안해... 잘못될 것 같아... 계속 걱정돼...',
+                        '예: 두근두근... 심장이 너무 빨리 뛰어...',
+                        '예: 어떡하지... 자꾸 나쁜 생각만 들어... 😰'
+                    ]
+                },
+                en: {
+                    milky: [
+                        'e.g., I feel so lonely and sad... Nobody understands me...',
+                        'e.g., Tears keep falling... Why is it so hard...',
+                        'e.g., I\'m depressed... Don\'t want to do anything... 😢'
+                    ],
+                    fizz: [
+                        'e.g., I\'m so angry! Why does this happen to me? So annoying!',
+                        'e.g., I\'m furious! Can\'t stand it anymore! 🔥',
+                        'e.g., This is crazy! Why am I so irritated!'
+                    ],
+                    mingle: [
+                        'e.g., I\'m anxious... Something might go wrong... I keep worrying...',
+                        'e.g., Heart racing... My heart beats too fast...',
+                        'e.g., What should I do... Only bad thoughts come... 😰'
+                    ]
+                }
+            };
+            
+            // 랜덤으로 하나 선택
+            const examples = placeholders[currentLang][character];
+            const randomExample = examples[Math.floor(Math.random() * examples.length)];
+            document.getElementById('emotionExpression').placeholder = randomExample;
+            
+            document.getElementById('emotionInputArea').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+
+
+        function feedEmotion() {
+            if (!selectedCharacter) {
+                alert(translations[currentLang].selectCharacterFirst);
+                return;
+            }
+
+            const expression = document.getElementById('emotionExpression').value.trim();
+            
+            if (!expression) {
+                alert(translations[currentLang].noExpressionAlert);
+                return;
+            }
+
+            if (expression.length < 10) {
+                alert(translations[currentLang].shortExpressionAlert);
+                return;
+            }
+
+            const emotion = characterMapping[selectedCharacter];
+            const charImg = document.getElementById('characterImg');
+            const bubble = document.getElementById('speechBubble');
+
+            // 캐릭터 이미지 변경 및 애니메이션
+            charImg.className = 'character-img';
+            
+            if (selectedCharacter === 'milky') {
+                charImg.src = './밀키.png';
+                setTimeout(() => charImg.classList.add('jelly'), 50);
+                playCheeseSound();
+            } else if (selectedCharacter === 'fizz') {
+                charImg.src = './피즈.png';
+                setTimeout(() => charImg.classList.add('shake'), 50);
+                playCrunchSound();
+            } else {
+                charImg.src = './밍글.png';
+                setTimeout(() => charImg.classList.add('jump'), 50);
+                playPoppingSound();
+            }
+
+            // 피드백 메시지
+            const feedback = translations[currentLang].feedbacks[selectedCharacter];
+            bubble.textContent = feedback;
+            bubble.classList.add('show');
+
+            // 해당 감정의 일기 3개 삭제
+            let deletedCount = 0;
+            diaryEntries = diaryEntries.filter(entry => {
+                if (deletedCount < 3 && entry.emotions.includes(emotion)) {
+                    deletedCount++;
+                    return false;
+                }
+                return true;
+            });
+
+            // 스택 리셋
+            emotionStacks[emotion] = 0;
+
+            renderDiaryList();
+            checkHungerStatus();
+            saveData();
+
+            // 입력 영역 숨기기
+            document.getElementById('emotionInputArea').classList.remove('active');
+            selectedCharacter = null;
+
+            setTimeout(() => {
+                alert(translations[currentLang].fedSuccess);
+            }, 500);
+
+            // 2초 후 원래 상태로 복귀
+            setTimeout(() => {
+                bubble.classList.remove('show');
+                charImg.className = 'character-img';
+                charImg.src = './밀키,피즈,밍글.png';
+            }, 2000);
+        }
+
+        // 밀키 - 치즈 먹는 소리
+        function playCheeseSound() {
+        const audio = new Audio('milky_eat.mp3');  // 파일 경로
+        audio.volume = 0.5;  // 볼륨 (0.0~1.0)
+        audio.play();
+        }
+// 피즈 - 바삭한 소리
+        function playCrunchSound() {
+        const audio = new Audio('fizz_eat.mp3');
+        audio.volume = 0.6;
+        audio.play();
+        }
+
+// 링글 - 터지는 소리
+        function playPoppingSound() {
+        const audio = new Audio('mingle_eat.mp3');
+        audio.volume = 0.5;
+        audio.play();
+        }
+
+
+        function startCooking() {
+            if (totalCookCount < 3) {
+                alert(translations[currentLang].cookNeedMore);
+                return;
+            }
+
+            const charImg = document.getElementById('characterImg');
+            charImg.classList.add('cooking');
+
+    // 🎵 첫 번째 mp3 재생 (요리 시작 소리)
+            const cookingSound = new Audio('cook.mp3');  // 파일 경로 수정하세요
+            cookingSound.volume = 0.5;  // 볼륨 조절 (0.0~1.0)
+            cookingSound.play();
+
+            setTimeout(() => {
+                charImg.classList.remove('cooking');
+                showReceipt();
+        
+        // 🎵 두 번째 mp3 재생 (영수증 나올 때 소리)
+                const receiptSound = new Audio('bell.mp3');  // 파일 경로 수정하세요
+                receiptSound.volume = 0.5;  // 볼륨 조절 (0.0~1.0)
+                receiptSound.play();
+                cookingSound.playbackRate = 1.2;  // 1.2배속
+                receiptSound.playbackRate = 0.8;  // 0.8배속
+
+            }, 2000);
+
+        }
+
+
+        function showReceipt() {
+            const total = emotionStacks.sadness + emotionStacks.anger + emotionStacks.anxiety;
+            
+            if (total === 0) {
+                var percentages = {
+                    sadness: 33,
+                    anger: 33,
+                    anxiety: 34
+                };
+            } else {
+                var percentages = {
+                    sadness: Math.round((emotionStacks.sadness / total) * 100),
+                    anger: Math.round((emotionStacks.anger / total) * 100),
+                    anxiety: Math.round((emotionStacks.anxiety / total) * 100)
+                };
+            }
+
+            const dominant = Object.keys(percentages).reduce((a, b) => 
+                percentages[a] > percentages[b] ? a : b
+            );
+
+            const pool = foodPools[dominant];
+            const langOffset = currentLang === 'en' ? 2 : 0;
+            
+            const main = pool.main[Math.floor(Math.random() * 2) + langOffset];
+            const side = pool.side[Math.floor(Math.random() * 2) + langOffset];
+            const drink = pool.drink[langOffset / 2];
+
+            const content = document.getElementById('receiptContent');
+            const emotionText = currentLang === 'ko' ? 
+                `슬픔 ${percentages.sadness}%, 분노 ${percentages.anger}%, 불안 ${percentages.anxiety}%` :
+                `Sadness ${percentages.sadness}%, Anger ${percentages.anger}%, Anxiety ${percentages.anxiety}%`;
+
+            const summaryText = currentLang === 'ko' ?
+                `당신의 솔직한 감정이 맛있는 요리로 정화되었습니다.<br>글루미들이 당신의 진심에 감사합니다.` :
+                `Your honest emotions have been purified into delicious dishes.<br>Gloomies thank you for your sincerity.`;
+
+            content.innerHTML = `
+                <div class="receipt-item"><strong>${currentLang === 'ko' ? '메인 요리' : 'Main Dish'}:</strong> ${main}</div>
+                <div class="receipt-item"><strong>${currentLang === 'ko' ? '사이드 디시' : 'Side Dish'}:</strong> ${side}</div>
+                <div class="receipt-item"><strong>${currentLang === 'ko' ? '음료' : 'Drink'}:</strong> ${drink}</div>
+                <div class="receipt-summary">
+                    <div>${currentLang === 'ko' ? '감정 배합 비율' : 'Emotion Ratio'}:</div>
+                    <div>${emotionText}</div>
+                    <div style="margin-top: 15px;">${summaryText}</div>
+                </div>
+            `;
+
+            document.getElementById('receiptModal').classList.add('show');
+        }
+
+        function cleanse() {
+            emotionStacks = { sadness: 0, anger: 0, anxiety: 0 };
+            diaryEntries = [];
+            totalCookCount = 0;
+            
+            renderDiaryList();
+            checkHungerStatus();
+            updateCookButton();
+            saveData();
+            
+            document.getElementById('receiptModal').classList.remove('show');
+            
+            alert(currentLang === 'ko' ? '모든 감정이 정화되었습니다!' : 'All emotions have been cleansed!');
+        }
+
+        // 초기화
+        window.onload = () => {
+            loadData();
+        };
+    </script>
+        <!-- ✨ 반짝이 커서 효과 -->
+    <div id="sparkle-container" style="position: fixed; inset: 0; pointer-events: none; z-index: 9999;"></div>
+
+    <script>
+        // 반짝이 커서 효과
+        const SPARKLE_COLORS = ["#fca5d0", "#c4b5fd", "#7dd3fc", "#fde68a", "#86efac", "#f9a8d4"];
+        let sparkles = [];
+        let lastPosition = { x: 0, y: 0 };
+        const sparkleContainer = document.getElementById('sparkle-container');
+
+        function createSparkle(x, y) {
+            const sparkle = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+            const size = Math.random() * 10 + 6;
+            const color = SPARKLE_COLORS[Math.floor(Math.random() * SPARKLE_COLORS.length)];
+            const rotation = Math.random() * 360;
+            
+            sparkle.setAttribute('viewBox', '0 0 24 24');
+            sparkle.setAttribute('fill', color);
+            sparkle.style.cssText = `
+                position: absolute;
+                left: ${x}px;
+                top: ${y}px;
+                width: ${size}px;
+                height: ${size}px;
+                transform: translate(-50%, -50%) rotate(${rotation}deg);
+                opacity: 1;
+                transition: opacity 0.8s ease-out;
+                pointer-events: none;
+            `;
+            
+            const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+            path.setAttribute('d', 'M12 0L14.59 9.41L24 12L14.59 14.59L12 24L9.41 14.59L0 12L9.41 9.41L12 0Z');
+            sparkle.appendChild(path);
+            
+            sparkleContainer.appendChild(sparkle);
+            
+            // 페이드 아웃 애니메이션
+            setTimeout(() => {
+                sparkle.style.opacity = '0';
+            }, 10);
+            
+            // 제거
+            setTimeout(() => {
+                if (sparkle.parentNode) {
+                    sparkle.parentNode.removeChild(sparkle);
+                }
+            }, 800);
+            
+            return sparkle;
+        }
+
+        // 마우스 이동 이벤트
+        document.addEventListener('mousemove', (e) => {
+            const distance = Math.sqrt(
+                Math.pow(e.clientX - lastPosition.x, 2) + 
+                Math.pow(e.clientY - lastPosition.y, 2)
+            );
+
+            if (distance > 15) {
+                // 랜덤 위치 추가
+                const offsetX = (Math.random() - 0.5) * 30;
+                const offsetY = (Math.random() - 0.5) * 30;
+                createSparkle(e.clientX + offsetX, e.clientY + offsetY);
+                lastPosition = { x: e.clientX, y: e.clientY };
+            }
+        });
+
+        // 주기적으로 오래된 반짝이 정리
+        setInterval(() => {
+            const sparkles = sparkleContainer.children;
+            if (sparkles.length > 30) {
+                for (let i = 0; i < sparkles.length - 30; i++) {
+                    if (sparkles[i]) {
+                        sparkles[i].remove();
+                    }
+                }
+            }
+        }, 100);
+    </script>
+
+</body>
+</html>
+
+
